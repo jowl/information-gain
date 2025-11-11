@@ -1,0 +1,14 @@
+{"Day":"D1","Outlook":"Sunny","Temp":"Hot","Humidity":"High","Windy":false,"Play Tennis":"No"}
+{"Day":"D2","Outlook":"Sunny","Temp":"Hot","Humidity":"High","Windy":true,"Play Tennis":"No"}
+{"Day":"D3","Outlook":"Overcast","Temp":"Hot","Humidity":"High","Windy":false,"Play Tennis":"Yes"}
+{"Day":"D4","Outlook":"Rain","Temp":"Mild","Humidity":"High","Windy":false,"Play Tennis":"Yes"}
+{"Day":"D5","Outlook":"Rain","Temp":"Cool","Humidity":"Normal","Windy":false,"Play Tennis":"Yes"}
+{"Day":"D6","Outlook":"Rain","Temp":"Cool","Humidity":"Normal","Windy":true,"Play Tennis":"No"}
+{"Day":"D7","Outlook":"Overcast","Temp":"Cool","Humidity":"Normal","Windy":true,"Play Tennis":"Yes"}
+{"Day":"D8","Outlook":"Sunny","Temp":"Mild","Humidity":"High","Windy":false,"Play Tennis":"No"}
+{"Day":"D9","Outlook":"Sunny","Temp":"Cool","Humidity":"Normal","Windy":false,"Play Tennis":"Yes"}
+{"Day":"D10","Outlook":"Rain","Temp":"Mild","Humidity":"Normal","Windy":false,"Play Tennis":"Yes"}
+{"Day":"D11","Outlook":"Sunny","Temp":"Mild","Humidity":"Normal","Windy":true,"Play Tennis":"Yes"}
+{"Day":"D12","Outlook":"Overcast","Temp":"Mild","Humidity":"High","Windy":true,"Play Tennis":"Yes"}
+{"Day":"D13","Outlook":"Overcast","Temp":"Hot","Humidity":"Normal","Windy":false,"Play Tennis":"Yes"}
+{"Day":"D14","Outlook":"Rain","Temp":"Mild","Humidity":"High","Windy":true,"Play Tennis":"No"}
