@@ -1,115 +1,56 @@
 #!/usr/bin/env ruby
 
+$LOAD_PATH << File.join(__dir__, '..', 'lib')
+
 require 'json'
+require 'csv'
 require 'optparse'
 
-class EntropyCalculator
-  def initialize(label_property)
-    @label_property = label_property
-    @label_counts = Hash.new(0)
-  end
-
-  def <<(object)
-    @label_counts[object[@label_property]] += 1
-  end
-
-  def labels
-    @label_counts.keys
-  end
-
-  def instances
-    @label_counts.values.reduce(:+)
-  end
-
-  def entropy
-    total = instances
-    @label_counts.reduce(0) do |acc, (_, count)|
-      fraction = count.fdiv(total)
-      acc - fraction * Math.log2(fraction)
-    end
-  end
-end
-
-class InformationGainCalculator
-  def initialize(label_property)
-    @label_property = label_property
-    @entropy_calculator = EntropyCalculator.new(label_property)
-    @feature_entropy_calculators = Hash.new do |h, feature|
-      h[feature] = Hash.new { |hh, val| hh[val] = EntropyCalculator.new(label_property) }
-    end
-  end
-
-  def <<(object)
-    object.each do |key, value|
-      if key == @label_property
-        @entropy_calculator << object
-      else
-        @feature_entropy_calculators[key][value] << object
-      end
-    end
-  end
-
-  def entropy
-    @entropy_calculator.entropy
-  end
-
-  def information_gains
-    total_entropy = entropy
-    total_instances = @entropy_calculator.instances
-    @feature_entropy_calculators.each_with_object({}) do |(feature, calculators), h|
-      h[feature] = total_entropy - calculators.reduce(0) do |acc, (_, calculator)|
-        acc + calculator.instances.fdiv(total_instances) * calculator.entropy
-      end
-    end
-  end
-
-  def intrinsic_values
-    total_instances = @entropy_calculator.instances
-    @feature_entropy_calculators.each_with_object({}) do |(feature, calculators), h|
-      h[feature] = calculators.reduce(0) do |acc, (_, calculator)|
-        fraction = calculator.instances.fdiv(total_instances)
-        acc - fraction * Math.log2(fraction)
-      end
-    end
-  end
-
-  def information_gain_ratios
-    information_gains.merge(intrinsic_values) { |_, gain, value| value.zero? ? 0.0 : gain / value }
-  end
-end
+require 'entropy_calculator'
+require 'information_gain_calculator'
+require 'input'
 
 options = {
   measure: :gain,
+  format: :json,
 }
 option_parser = OptionParser.new do |opts|
   opts.on('--label PROPERTY', 'The label property') { |v| options[:label_property] = v }
+  opts.on('--group A,B,C', Array, 'Group by features') { |v| options[:group_features] = v }
   opts.on('--measure MEASURE', %i[gain intrinsic ratio], %(The type of measure to produce (default #{options[:measure]}))) { |v| options[:measure] = v }
+  opts.on('--format FORMAT', %i[json csv tsv], %(Input data format (default #{options[:format]}))) { |v| options[:format] = v }
 end
 option_parser.parse!
 unless options[:label_property]
   abort sprintf(%(--label is required\n%s), option_parser.help)
 end
 
-calculator = InformationGainCalculator.new(options[:label_property])
+data = Input.create(options[:format], $stdin)
 
-STDIN.each do |line|
-  calculator << JSON.parse(line)
+calculators = Hash.new { |h,k| h[k] = InformationGainCalculator.new(options[:label_property]) }
+
+group_features = options[:group_features]
+data.each do |record|
+  key = nil
+  if group_features
+    key = group_features.map { |k| record[k] }
+  end
+  calculator = calculators[key]
+  calculator << record
 end
 
-values = case options[:measure]
-when :gain then calculator.information_gains
-when :intrinsic then calculator.intrinsic_values
-when :ratio then calculator.information_gain_ratios
-end
-
-$stderr.puts sprintf(%(%.3f\ttotal entropy for %p), calculator.entropy, options[:label_property])
-$stderr.puts
-$stdout.puts sprintf(%(%s\tfeature), options[:measure])
-$stderr.puts sprintf(%(%s\t-------), '-' * options[:measure].size)
-begin
-values.sort_by { |_, value| -value }.each do |feature, value|
-  $stdout.puts sprintf(%(%.3f\t%s), value, feature)
-end
-rescue
-  $stdout.puts JSON.dump(values)
+headers = [options[:measure], *%w[feature entropy]]
+headers << 'group' if group_features
+$stdout.puts headers.join("\t")
+calculators.each do |key, calculator|
+  values = case options[:measure]
+  when :gain then calculator.information_gains
+  when :intrinsic then calculator.intrinsic_values
+  when :ratio then calculator.information_gain_ratios
+  end
+  values.sort_by { |_, value| -value }.each do |feature, value|
+    columns = [sprintf('%.3f', value), feature, sprintf('%.3f', calculator.entropy)]
+    columns << key if group_features
+    $stdout.puts columns.join("\t")
+  end
 end

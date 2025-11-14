@@ -25,16 +25,13 @@ The information gain ratio is the ratio between information gain and intrinsic v
 The repository contains a small dataset to understand the tool:
 
 ```
-$ bin/information-gain --label "Play Tennis" --measure gain < example-data/tennis.json
-0.940	total entropy for "Play Tennis"
-
-gain	feature
-----	-------
-0.940	Day
-0.247	Outlook
-0.152	Humidity
-0.048	Windy
-0.029	Temp
+$ bin/information-gain --label "Play Tennis" --measure gain --format json < example-data/tennis.json
+gain	feature	entropy
+0.940	Day	0.940
+0.247	Outlook	0.940
+0.152	Humidity	0.940
+0.048	Windy	0.940
+0.029	Temp	0.940
 ```
 
 The output tells you that the total entropy for the `Play Tennis` label is 0.940, and then lists the information gain for each feature. Based on the output, `Day` is the most likely to predict `Play Tennis`, followed by `Outlook`.
@@ -42,16 +39,13 @@ The output tells you that the total entropy for the `Play Tennis` label is 0.940
 If we swap `gain` for `ratio`, we get the following:
 
 ```
-$ bin/information-gain --label "Play Tennis" --measure ratio < example-data/tennis.json
-0.940	total entropy for "Play Tennis"
-
-ratio	feature
------	-------
-0.247	Day
-0.156	Outlook
-0.152	Humidity
-0.049	Windy
-0.019	Temp
+$ bin/information-gain --label "Play Tennis" --measure ratio --format json < example-data/tennis.json
+ratio	feature	entropy
+0.247	Day	0.940
+0.156	Outlook	0.940
+0.152	Humidity	0.940
+0.049	Windy	0.940
+0.019	Temp	0.940
 ```
 
 Where we see that the relative information between `Day` and `Outlook` is much lower, due to the high cardinality of `Day`. This indicates that the correlation between `Day` and `Play Tennis` is not as strong as the information gain indicated.
